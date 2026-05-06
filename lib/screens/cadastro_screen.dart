@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
+import '/utils/validators.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,16 +14,19 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Formulário de Cadastro Completo Jonathan Antonio Marcilio',
-      theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.blue),
+      theme: ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: Colors.blue,
+      ),
       home: const FormExamplePage(),
     );
   }
 }
 
-// ==================================================================================================================================== 
+// ====================================================================================================================================
 class CadastroData {
   final String nome;
-  final String email; 
+  final String email;
   final String cpf;
   final String telefone;
   final String senha;
@@ -41,7 +46,7 @@ class CadastroData {
   });
 }
 
-// ==========================================================================================================================================
+// ====================================================================================================================================
 class FormExamplePage extends StatefulWidget {
   const FormExamplePage({super.key});
 
@@ -49,7 +54,7 @@ class FormExamplePage extends StatefulWidget {
   State<FormExamplePage> createState() => _FormExamplePageState();
 }
 
-// ======================================================================================================================================
+// ====================================================================================================================================
 class _FormExamplePageState extends State<FormExamplePage> {
   final _formKey = GlobalKey<FormState>();
 
@@ -80,14 +85,30 @@ class _FormExamplePageState extends State<FormExamplePage> {
     _telefoneController.dispose();
     _senhaController.dispose();
     _confirmaSenhaController.dispose();
+
     _nomeFocus.dispose();
     _emailFocus.dispose();
     _cpfFocus.dispose();
     _telefoneFocus.dispose();
     _senhaFocus.dispose();
     _confirmaSenhaFocus.dispose();
+
     super.dispose();
   }
+
+  // Máscara CPF
+  final _cpfMask = MaskTextInputFormatter(
+    mask: '###.###.###-##',
+    filter: {"#": RegExp(r'[0-9]')},
+  );
+
+  // Máscara Telefone
+  final _telefoneMask = MaskTextInputFormatter(
+    mask: '(##) #####-####',
+    filter: {"#": RegExp(r'[0-9]')},
+  );
+
+  // ====================================================================================================================================
 
   Future<void> _selecionarData() async {
     final data = await showDatePicker(
@@ -97,118 +118,182 @@ class _FormExamplePageState extends State<FormExamplePage> {
       lastDate: DateTime.now(),
     );
 
-    if (data != null) setState(() => _dataNascimento = data);
+    if (data != null) {
+      setState(() => _dataNascimento = data);
+    }
   }
 
+  // ====================================================================================================================================
+
   void _enviarFormulario() async {
-    if (!_formKey.currentState!.validate() || !_aceitaTermos) {
+    if (!_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Verifique os campos obrigatórios'),
+          content: Text('Corrija os campos inválidos'),
           backgroundColor: Colors.red,
         ),
       );
       return;
     }
-    
+
+    if (_dataNascimento == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Selecione a data de nascimento'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    if (!_aceitaTermos) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Você deve aceitar os termos'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
     setState(() => _carregando = true);
+
     await Future.delayed(const Duration(seconds: 2));
+
     setState(() => _carregando = false);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Cadastro realizado com sucesso'),
+        backgroundColor: Colors.green,
+      ),
+    );
   }
+
+  // ====================================================================================================================================
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Formulário de Cadastro Completo')),
+      appBar: AppBar(
+        title: const Text('Formulário de Cadastro Completo'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: ListView(
             children: [
-              // Nome do Usuário =======================================================================================================
+              // Nome =====================================================================================
               const SizedBox(height: 12),
               TextFormField(
                 controller: _nomeController,
                 focusNode: _nomeFocus,
-                decoration: const InputDecoration(labelText: 'Nome Completo'),
+                decoration: const InputDecoration(
+                  labelText: 'Nome Completo',
+                ),
                 textInputAction: TextInputAction.next,
                 onFieldSubmitted: (_) => _emailFocus.requestFocus(),
-                validator: (v) => v!.isEmpty ? 'Campo obrigatório' : null,
+                validator: Validators.validarNome,
               ),
-              // Email do Usuário =======================================================================================================
+              // Email ====================================================================================
               const SizedBox(height: 12),
               TextFormField(
                 controller: _emailController,
                 focusNode: _emailFocus,
-                decoration: const InputDecoration(labelText: 'Email'),
-                textInputAction: TextInputAction.next,
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                ),
                 keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
                 onFieldSubmitted: (_) => _cpfFocus.requestFocus(),
-                validator: (v) => v!.contains('@') ? null : 'Email inválido',
+                validator: Validators.validarEmail,
               ),
-              // CPF do Usuário =========================================================================================================
+              // CPF ======================================================================================
               const SizedBox(height: 12),
               TextFormField(
                 controller: _cpfController,
                 focusNode: _cpfFocus,
-                decoration: const InputDecoration(labelText: 'CPF'),
+                decoration: const InputDecoration(
+                  labelText: 'CPF',
+                ),
+                keyboardType: TextInputType.number,
+                inputFormatters: [_cpfMask],
                 textInputAction: TextInputAction.next,
                 onFieldSubmitted: (_) => _telefoneFocus.requestFocus(),
-                validator: (v) => v!.isEmpty ? 'Campo obrigatório' : null,
+                validator: Validators.validarCPF,
               ),
-              // Telefone do Usuário ====================================================================================================
+              // Telefone =================================================================================
               const SizedBox(height: 12),
               TextFormField(
                 controller: _telefoneController,
                 focusNode: _telefoneFocus,
-                decoration: const InputDecoration(labelText: 'Telefone'),
+                decoration: const InputDecoration(
+                  labelText: 'Telefone',
+                ),
+                keyboardType: TextInputType.phone,
+                inputFormatters: [_telefoneMask],
                 textInputAction: TextInputAction.next,
                 onFieldSubmitted: (_) => _senhaFocus.requestFocus(),
-                validator: (v) => v!.isEmpty ? 'Campo obrigatório' : null,
+                validator: Validators.validarTelefone,
               ),
-              // Senha do Usuário =======================================================================================================
+              // Senha ====================================================================================
               const SizedBox(height: 12),
               TextFormField(
                 controller: _senhaController,
                 focusNode: _senhaFocus,
-                decoration: const InputDecoration(labelText: 'Senha'),
+                decoration: const InputDecoration(
+                  labelText: 'Senha',
+                ),
                 obscureText: true,
                 textInputAction: TextInputAction.next,
-                onFieldSubmitted: (_) => _confirmaSenhaFocus.requestFocus(),
-                validator: (v) => v!.isEmpty ? 'Campo obrigatório' : null,
+                onFieldSubmitted: (_) =>
+                    _confirmaSenhaFocus.requestFocus(),
+                validator: Validators.validarSenha,
               ),
-              // Confirmação da Senha ===================================================================================================
+              // Confirmar senha ==========================================================================
               const SizedBox(height: 12),
               TextFormField(
                 controller: _confirmaSenhaController,
                 focusNode: _confirmaSenhaFocus,
-                decoration: const InputDecoration(labelText: 'Confirme a Senha'),
+                decoration: const InputDecoration(
+                  labelText: 'Confirme a Senha',
+                ),
                 obscureText: true,
-                textInputAction: TextInputAction.next,
-                validator: (v) => v!.isEmpty ? 'Campo obrigatório' : null,
+                validator: (value) {
+                  return Validators.validarConfirmacaoSenha(
+                  value,
+                  _senhaController.text,
+                  );
+                },
               ),
-              // Data de Nascimento do Usuário ==========================================================================================
+              // Data ======================================================================================
               const Divider(height: 32),
               ListTile(
                 title: const Text('Data de nascimento'),
-                subtitle: Text(_dataNascimento == null
-                    ? 'Não selecionada'
-                    : '${_dataNascimento!.day}/${_dataNascimento!.month}/${_dataNascimento!.year}'),
+                subtitle: Text(
+                  _dataNascimento == null
+                      ? 'Não selecionada'
+                      : '${_dataNascimento!.day}/${_dataNascimento!.month}/${_dataNascimento!.year}',
+                ),
                 trailing: const Icon(Icons.calendar_month),
                 onTap: _selecionarData,
               ),
-              // Checkbox Termos de Uso =================================================================================================
+              // Termos ====================================================================================
               const Divider(height: 32),
               CheckboxListTile(
                 title: const Text('Aceito os termos de uso'),
                 value: _aceitaTermos,
-                onChanged: (v) => setState(() => _aceitaTermos = v!),
+                onChanged: (v) {
+                  setState(() => _aceitaTermos = v!);
+                },
               ),
-              // Botão de Confirmação ===================================================================================================
+              // Botão =====================================================================================
               const SizedBox(height: 24),
               _carregando
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const Center(
+                      child: CircularProgressIndicator(),
+                    )
                   : FilledButton(
                       onPressed: _enviarFormulario,
                       child: const Text('Enviar'),
@@ -220,4 +305,3 @@ class _FormExamplePageState extends State<FormExamplePage> {
     );
   }
 }
-
