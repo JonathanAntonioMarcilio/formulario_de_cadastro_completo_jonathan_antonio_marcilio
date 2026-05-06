@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
-import '/utils/validators.dart';
+import '../validators/validators.dart';
 
 void main() {
   runApp(const MyApp());
