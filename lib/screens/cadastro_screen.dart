@@ -58,6 +58,7 @@ class FormExamplePage extends StatefulWidget {
 class _FormExamplePageState extends State<FormExamplePage> {
   final _formKey = GlobalKey<FormState>();
 
+  // Controlles
   final _nomeController = TextEditingController();
   final _emailController = TextEditingController();
   final _cpfController = TextEditingController();
@@ -65,6 +66,7 @@ class _FormExamplePageState extends State<FormExamplePage> {
   final _senhaController = TextEditingController();
   final _confirmaSenhaController = TextEditingController();
 
+  // Focus 
   final _nomeFocus = FocusNode();
   final _emailFocus = FocusNode();
   final _cpfFocus = FocusNode();
@@ -72,11 +74,13 @@ class _FormExamplePageState extends State<FormExamplePage> {
   final _senhaFocus = FocusNode();
   final _confirmaSenhaFocus = FocusNode();
 
+  // Outras Variáveis 
   DateTime? _dataNascimento;
 
   bool _aceitaTermos = false;
   bool _carregando = false;
 
+  // Dispose dos controllers e focus pra otimizar memória 
   @override
   void dispose() {
     _nomeController.dispose();
@@ -96,20 +100,19 @@ class _FormExamplePageState extends State<FormExamplePage> {
     super.dispose();
   }
 
-  // Máscara CPF
+  // Máscara do CPF
   final _cpfMask = MaskTextInputFormatter(
     mask: '###.###.###-##',
     filter: {"#": RegExp(r'[0-9]')},
   );
 
-  // Máscara Telefone
+  // Máscara do Telefone
   final _telefoneMask = MaskTextInputFormatter(
     mask: '(##) #####-####',
     filter: {"#": RegExp(r'[0-9]')},
   );
 
-  // ====================================================================================================================================
-
+  // Seletor de Data
   Future<void> _selecionarData() async {
     final data = await showDatePicker(
       context: context,
@@ -123,8 +126,7 @@ class _FormExamplePageState extends State<FormExamplePage> {
     }
   }
 
-  // ====================================================================================================================================
-
+  // Botão de enviar ====================================================================================================================================
   void _enviarFormulario() async {
     if (!_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -170,8 +172,7 @@ class _FormExamplePageState extends State<FormExamplePage> {
     );
   }
 
-  // ====================================================================================================================================
-
+  // Construção da UI ====================================================================================================================================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -184,7 +185,7 @@ class _FormExamplePageState extends State<FormExamplePage> {
           key: _formKey,
           child: ListView(
             children: [
-              // Nome =====================================================================================
+              // Nome =====================================================================================================================
               const SizedBox(height: 12),
               TextFormField(
                 controller: _nomeController,
@@ -196,7 +197,7 @@ class _FormExamplePageState extends State<FormExamplePage> {
                 onFieldSubmitted: (_) => _emailFocus.requestFocus(),
                 validator: Validators.validarNome,
               ),
-              // Email ====================================================================================
+              // Email ====================================================================================================================
               const SizedBox(height: 12),
               TextFormField(
                 controller: _emailController,
@@ -209,7 +210,7 @@ class _FormExamplePageState extends State<FormExamplePage> {
                 onFieldSubmitted: (_) => _cpfFocus.requestFocus(),
                 validator: Validators.validarEmail,
               ),
-              // CPF ======================================================================================
+              // CPF =====================================================================================================================
               const SizedBox(height: 12),
               TextFormField(
                 controller: _cpfController,
@@ -223,7 +224,7 @@ class _FormExamplePageState extends State<FormExamplePage> {
                 onFieldSubmitted: (_) => _telefoneFocus.requestFocus(),
                 validator: Validators.validarCPF,
               ),
-              // Telefone =================================================================================
+              // Telefone ================================================================================================================
               const SizedBox(height: 12),
               TextFormField(
                 controller: _telefoneController,
@@ -237,7 +238,7 @@ class _FormExamplePageState extends State<FormExamplePage> {
                 onFieldSubmitted: (_) => _senhaFocus.requestFocus(),
                 validator: Validators.validarTelefone,
               ),
-              // Senha ====================================================================================
+              // Senha ===================================================================================================================
               const SizedBox(height: 12),
               TextFormField(
                 controller: _senhaController,
@@ -251,7 +252,7 @@ class _FormExamplePageState extends State<FormExamplePage> {
                     _confirmaSenhaFocus.requestFocus(),
                 validator: Validators.validarSenha,
               ),
-              // Confirmar senha ==========================================================================
+              // Confirmar senha =========================================================================================================
               const SizedBox(height: 12),
               TextFormField(
                 controller: _confirmaSenhaController,
@@ -267,7 +268,7 @@ class _FormExamplePageState extends State<FormExamplePage> {
                   );
                 },
               ),
-              // Data ======================================================================================
+              // Data ====================================================================================================================
               const Divider(height: 32),
               ListTile(
                 title: const Text('Data de nascimento'),
@@ -279,7 +280,7 @@ class _FormExamplePageState extends State<FormExamplePage> {
                 trailing: const Icon(Icons.calendar_month),
                 onTap: _selecionarData,
               ),
-              // Termos ====================================================================================
+              // Termos ==================================================================================================================
               const Divider(height: 32),
               CheckboxListTile(
                 title: const Text('Aceito os termos de uso'),
@@ -288,7 +289,7 @@ class _FormExamplePageState extends State<FormExamplePage> {
                   setState(() => _aceitaTermos = v!);
                 },
               ),
-              // Botão =====================================================================================
+              // Botão ===================================================================================================================
               const SizedBox(height: 24),
               _carregando
                   ? const Center(
